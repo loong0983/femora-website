@@ -2,13 +2,13 @@
 /**
  * Plugin Name: FEMORA Shop
  * Description: 下单后台专用：结账语言切换（中 / 英 / 马来）、直达结账链接、订单来源标记。此文件由代码仓库管理并自动上传，请勿在后台直接修改。
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: FEMORA
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const FM_SHOP_VERSION = '1.0.1';
+const FM_SHOP_VERSION = '1.0.2';
 
 /** 语言代码 => WordPress locale */
 const FM_LANGS = array(
@@ -157,14 +157,17 @@ if ( ! defined( 'WP_CLI' ) ) {
 	}
 }
 
-add_filter(
-	'locale',
-	function ( $locale ) {
-		$lang = fm_active_lang();
-		return $lang ? FM_LANGS[ $lang ] : $locale;
-	},
-	99999
-);
+function fm_filter_locale( $locale ) {
+	$lang = fm_active_lang();
+	return $lang ? FM_LANGS[ $lang ] : $locale;
+}
+// 优先级放到最后，盖过 TranslatePress 对默认语言的设定。
+add_filter( 'locale', 'fm_filter_locale', PHP_INT_MAX );
+add_filter( 'determine_locale', 'fm_filter_locale', PHP_INT_MAX );
+add_filter( 'pre_determine_locale', function ( $locale ) {
+	$lang = fm_active_lang();
+	return $lang ? FM_LANGS[ $lang ] : $locale;
+}, PHP_INT_MAX );
 
 /* -------------------------------------------------------------------------
  * 2. 产品、配套、运费、付款方式的名称按语言显示
