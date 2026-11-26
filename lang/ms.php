@@ -110,6 +110,8 @@ return array(
 	'There are no payment methods available. This may be an error on our side. Please contact us if you need any help placing your order.' => 'Tiada kaedah pembayaran tersedia. Ini mungkin ralat di pihak kami. Sila hubungi kami jika anda perlukan bantuan untuk membuat pesanan.',
 	'Payment method'                        => 'Kaedah pembayaran',
 	'Payment method:'                       => 'Kaedah pembayaran:',
+	'Payment:'                              => 'Pembayaran:',
+	'Payment'                               => 'Pembayaran',
 
 	// —— 订单摘要 ——
 	'Order summary'                         => 'Ringkasan pesanan',

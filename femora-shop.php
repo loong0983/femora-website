@@ -2,13 +2,13 @@
 /**
  * Plugin Name: FEMORA Shop
  * Description: 下单后台专用：结账语言切换（中 / 英 / 马来）、直达结账链接、订单来源标记。此文件由代码仓库管理并自动上传，请勿在后台直接修改。
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: FEMORA
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const FM_SHOP_VERSION = '1.2.0';
+const FM_SHOP_VERSION = '1.2.1';
 
 /** 语言代码 => WordPress locale */
 const FM_LANGS = array(
@@ -590,7 +590,8 @@ add_action(
 	'woocommerce_checkout_create_order_line_item',
 	function ( $item, $cart_item_key, $values ) {
 		if ( isset( $values['data'] ) && $values['data'] instanceof WC_Product ) {
-			$item->set_name( $values['data']->get_name( 'edit' ) );
+			// WooCommerce 会在配套名称中间放 <span> - </span>，去掉标签，导出表格才干净。
+			$item->set_name( wp_strip_all_tags( $values['data']->get_name( 'edit' ) ) );
 		}
 	},
 	20,
