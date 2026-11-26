@@ -1,0 +1,54 @@
+{
+  "_nota": "Isi maklumat di bawah, kemudian jalankan: python3 build.py   (medan kosong akan dipaparkan sebagai [isi: ...] berwarna kuning). Tukar draf kepada false bila semua sudah lengkap.",
+  "draf": true,
+  "jenama": "FEMORA",
+  "domain": "",
+  "whatsapp": "",
+  "emel": "",
+  "syarikat": "",
+  "no_ssm": "",
+  "alamat_syarikat": "",
+  "no_mal": "",
+  "halal": "",
+  "gmp": false,
+  "bentuk": "minuman sedia diminum dalam sachet",
+  "kandungan_sekotak": "10 sachet x 20 ml",
+  "cara_ambil": [],
+  "pakej": [
+    {
+      "nama": "1 kotak",
+      "label": "Untuk mencuba",
+      "harga": null,
+      "harga_asal": null,
+      "nota": "",
+      "pilihan": false
+    },
+    {
+      "nama": "2 kotak",
+      "label": "Paling ramai pilih",
+      "harga": null,
+      "harga_asal": null,
+      "nota": "",
+      "pilihan": true
+    },
+    {
+      "nama": "3 kotak",
+      "label": "Paling jimat",
+      "harga": null,
+      "harga_asal": null,
+      "nota": "",
+      "pilihan": false
+    }
+  ],
+  "penghantaran": {
+    "kos_semenanjung": "",
+    "kos_sabah_sarawak": "",
+    "tempoh": "",
+    "kurier": "",
+    "cod": false
+  },
+  "cara_bayar": [],
+  "polisi_pemulangan": "",
+  "testimoni": [],
+  "meta_pixel_id": ""
+}
