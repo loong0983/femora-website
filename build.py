@@ -175,8 +175,11 @@ def pakej_html():
         lencana = f'<span class="pakej__lencana">{e(p["lencana"])}</span>' if p.get("lencana") else ""
         asal = f'<p class="pakej__asal">{e(p["sekotak"])}</p>' if p.get("sekotak") else '<p class="pakej__asal"></p>'
         nota = e(p.get("nota") or "")
+        gambar = (f'<img class="pakej__gambar" src="img/{e(p["gambar"])}" alt="{e(p.get("gambar_alt") or p["nama"])}" '
+                  f'width="960" height="640" loading="lazy">') if p.get("gambar") else ""
         kad.append(f'''<div class="pakej__kad{" pakej__kad--pilihan" if pilihan else ""}">
   {lencana}
+  {gambar}
   <h3 class="pakej__nama">{e(p["nama"])}</h3>
   <p class="pakej__label">{e(p.get("label") or "")}</p>
   <p class="pakej__harga">{harga(p.get("harga"))}</p>
