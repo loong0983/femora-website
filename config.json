@@ -1,10 +1,10 @@
 {
   "_nota": "Ubah maklumat di sini, kemudian jalankan: python3 build.py. Medan kosong dipaparkan sebagai [isi: ...]. Tulis \"tiada\" untuk menyembunyikan sesuatu medan. \"indeks\": true membenarkan enjin carian (tukar selepas domain rasmi disambung).",
   "draf": false,
-  "indeks": false,
+  "indeks": true,
   "jenama": "FEMORA",
   "produk": "FEMORA P+",
-  "domain": "",
+  "domain": "femora-my.com",
   "whatsapp": "60122475798",
   "emel": "admin@femoramy.com",
   "syarikat": "JK HEALTHY SDN. BHD.",
