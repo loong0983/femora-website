@@ -1,54 +1,52 @@
 {
-  "_nota": "Isi maklumat di bawah, kemudian jalankan: python3 build.py   (medan kosong akan dipaparkan sebagai [isi: ...] berwarna kuning). Tukar draf kepada false bila semua sudah lengkap.",
-  "draf": true,
+  "_nota": "Ubah maklumat di sini, kemudian jalankan: python3 build.py. Medan kosong dipaparkan sebagai [isi: ...]. Tulis \"tiada\" untuk menyembunyikan sesuatu medan. \"indeks\": true membenarkan enjin carian (tukar selepas domain rasmi disambung).",
+  "draf": false,
+  "indeks": false,
+
   "jenama": "FEMORA",
+  "produk": "FEMORA P+",
   "domain": "",
-  "whatsapp": "",
-  "emel": "",
-  "syarikat": "",
-  "no_ssm": "",
-  "alamat_syarikat": "",
-  "no_mal": "",
-  "halal": "",
-  "gmp": false,
-  "bentuk": "minuman sedia diminum dalam sachet",
+  "whatsapp": "60122475798",
+  "emel": "admin@femoramy.com",
+
+  "syarikat": "JK HEALTHY SDN. BHD.",
+  "no_ssm": "202601003161 (1665258-D)",
+  "alamat_syarikat": "No. 8-10, Jalan Gamelan 1, Bandar Bukit Raja, 41050 Klang, Selangor, Malaysia",
+  "pengilang": "Nutrifood International Sdn Bhd, Ipoh, Perak",
+
+  "no_mal": "tiada",
+  "halal": "Sijil Halal JAKIM",
+  "halal_butiran": "Sijil Pengesahan Halal Malaysia dikeluarkan untuk produk ini kepada pengilangnya, Nutrifood International Sdn Bhd, dan sah hingga 15 September 2028.",
+  "sebab_halal": "Bersijil Halal JAKIM, dan dikilangkan di kilang yang bertauliah GMP dan HACCP.",
+  "gmp": true,
+
+  "bentuk": "minuman sedia diminum dalam sachet 20 ml",
   "kandungan_sekotak": "10 sachet x 20 ml",
-  "cara_ambil": [],
-  "pakej": [
-    {
-      "nama": "1 kotak",
-      "label": "Untuk mencuba",
-      "harga": null,
-      "harga_asal": null,
-      "nota": "",
-      "pilihan": false
-    },
-    {
-      "nama": "2 kotak",
-      "label": "Paling ramai pilih",
-      "harga": null,
-      "harga_asal": null,
-      "nota": "",
-      "pilihan": true
-    },
-    {
-      "nama": "3 kotak",
-      "label": "Paling jimat",
-      "harga": null,
-      "harga_asal": null,
-      "nota": "",
-      "pilihan": false
-    }
+  "cara_ambil": [
+    { "tajuk": "Koyak dan minum terus", "isi": "Tak perlu bancuh atau rebus. Minum sebaik sahaja sachet dibuka." },
+    { "tajuk": "1 hingga 2 sachet sehari", "isi": "Ikut sukatan pada kotak. Cadangan kami: mula selepas haid tamat, satu sachet sehari." },
+    { "tajuk": "Simpan di tempat sejuk dan kering", "isi": "Jauhkan daripada cahaya matahari terus. Sekotak cukup untuk 5 hingga 10 hari." }
   ],
+
+  "pakej": [
+    { "nama": "Pakej Cuba", "label": "1 kotak", "harga": 89, "sekotak": "RM89 sekotak", "nota": "Cuba satu kotak dahulu", "lencana": "", "pilihan": false },
+    { "nama": "Pakej Duo", "label": "2 kotak", "harga": 159, "sekotak": "RM79.50 sekotak", "nota": "Penghantaran percuma", "lencana": "", "pilihan": false },
+    { "nama": "Pakej Tambah Nilai", "label": "3 kotak + 1 percuma, jumlah 4 kotak", "harga": 309, "sekotak": "RM77.25 sekotak", "nota": "Penghantaran percuma, percuma 1 kotak", "lencana": "Percuma 1 kotak", "pilihan": false },
+    { "nama": "Pakej Stok", "label": "4 kotak + 2 percuma, jumlah 6 kotak", "harga": 439, "sekotak": "Kira-kira RM73.17 sekotak", "nota": "Penghantaran percuma, percuma 2 kotak", "lencana": "Paling rendah sekotak", "pilihan": true }
+  ],
+
   "penghantaran": {
-    "kos_semenanjung": "",
-    "kos_sabah_sarawak": "",
-    "tempoh": "",
+    "kos_semenanjung": "RM6.50",
+    "kos_sabah_sarawak": "RM13.00",
+    "percuma": "Penghantaran percuma untuk 2 kotak ke atas, Semenanjung serta Sabah dan Sarawak.",
+    "tempoh": "Tempahan dipos dalam masa 24 jam selepas bayaran atau tempahan COD disahkan.",
     "kurier": "",
-    "cod": false
+    "cod": true
   },
-  "cara_bayar": [],
-  "polisi_pemulangan": "",
+  "cara_bayar": ["Pindahan bank", "Bayar semasa terima (COD)"],
+  "polisi_pemulangan": "Jika barang rosak atau salah hantar, hubungi kami di WhatsApp dalam masa 24 jam selepas kurier menunjukkan barang diterima. Sertakan nombor tempahan, gambar bungkusan luar, nota kurier, dan gambar atau video semasa membuka bungkusan. Selepas semakan, kami utamakan penggantian atau penghantaran semula.",
+
   "testimoni": [],
+
   "meta_pixel_id": ""
 }

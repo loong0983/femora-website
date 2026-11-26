@@ -20,6 +20,8 @@ cfg = json.loads((AKAR / "config.json").read_text(encoding="utf-8"))
 
 DRAF = bool(cfg.get("draf", True))
 JENAMA = cfg.get("jenama") or "FEMORA"
+PRODUK = cfg.get("produk") or JENAMA
+INDEKS = (not DRAF) and bool(cfg.get("indeks", False))
 TAHUN = datetime.date.today().year
 kosong = []  # medan yang belum diisi
 
@@ -98,9 +100,9 @@ def rajah(hidup=False, kapsyen=True):
         y = 180 + 160 * math.sin(sudut)
         titik.append(f'<circle class="r-titik" style="--i:{k}" cx="{x:.1f}" cy="{y:.1f}" r="9"/>')
     kelas = "rajah rajah--hidup" if hidup else "rajah"
-    kap = '<figcaption>2 herba utama, dikelilingi 8 herba Ba Zhen</figcaption>' if kapsyen else ""
+    kap = '<figcaption>2 herba warisan Melayu, bersama 8 herba Ba Zhen</figcaption>' if kapsyen else ""
     return f'''<figure class="{kelas}">
-  <svg viewBox="0 0 360 360" role="img" aria-label="Rajah formula: Kacip Fatimah dan Manjakani sebagai dua herba utama, dikelilingi lapan herba Ba Zhen">
+  <svg viewBox="0 0 360 360" role="img" aria-label="Rajah formula: Kacip Fatimah dan Manjakani, dikelilingi lapan herba Ba Zhen">
     <circle class="r-orbit" cx="180" cy="180" r="160"/>
     {"".join(titik)}
     <circle class="r-bulat" cx="124" cy="180" r="82" fill="#3f7d5f" fill-opacity=".94"/>
@@ -131,19 +133,20 @@ def butang_tanya(kelas="butang--garis"):
 
 
 LAPAN = [
-    ("Dang Gui", "akar angelika", "Angelica sinensis", "Akar"),
-    ("Chuan Xiong", "rizom lovage Sichuan", "Ligusticum chuanxiong", "Rizom"),
-    ("Bai Shao", "akar peony putih", "Paeonia lactiflora", "Akar"),
-    ("Shu Di Huang", "akar rehmannia", "Rehmannia glutinosa", "Akar yang dikukus"),
-    ("Ren Shen", "ginseng", "Panax ginseng", "Akar"),
+    ("Dang Shen", "akar kodonopsis", "Codonopsis pilosula", "Akar"),
+    ("Shu Di Huang", "akar rehmannia tersedia", "Rehmannia glutinosa", "Akar yang dikukus"),
+    ("Dang Gui", "akar angelika Cina", "Angelica sinensis", "Akar"),
     ("Bai Zhu", "rizom atractylodes", "Atractylodes macrocephala", "Rizom"),
-    ("Fu Ling", "kulat poria", "Poria cocos", "Kulat"),
-    ("Gan Cao", "akar manis", "Glycyrrhiza uralensis", "Akar"),
+    ("Bai Shao", "akar peony putih", "Paeonia lactiflora", "Akar"),
+    ("Chuan Xiong", "rizom lovage Szechwan", "Ligusticum chuanxiong", "Rizom"),
+    ("Fu Ling", "poria", "Poria cocos", "Kulat"),
+    ("Zhi Gan Cao", "akar likuoris tersedia", "Glycyrrhiza uralensis", "Akar"),
 ]
 
 AMARAN = '''<div class="amaran">
-  <p><b>Sebelum mula:</b> jangan ambil jika anda hamil. Jika anda menyusu, merancang untuk hamil, ada penyakit kronik,
+  <p><b>Sebelum mula:</b> jangan ambil jika anda hamil. Jika anda menyusu, merancang untuk hamil, ada masalah kesihatan,
   atau sedang mengambil ubat (contohnya ubat cair darah atau ubat hormon), tanya doktor atau ahli farmasi dahulu.</p>
+  <p>Jangan minum jika bungkusan rosak, bocor atau kembung.</p>
 </div>'''
 
 
@@ -152,7 +155,7 @@ def cara_ambil_html():
     if not langkah:
         langkah = [
             {"tajuk": "Ikut sukatan pada label",
-             "isi_html": isi("sukatan dan waktu ambil, cth. 2 kapsul selepas sarapan")},
+             "isi_html": isi("sukatan dan waktu ambil")},
             {"tajuk": "Ambil pada waktu yang sama setiap hari",
              "isi": "Letak kotak di tempat yang anda nampak, contohnya sebelah cerek atau di meja solek, supaya tak terlupa."},
             {"tajuk": "Simpan dengan betul",
@@ -169,8 +172,8 @@ def pakej_html():
     kad = []
     for i, p in enumerate(cfg.get("pakej") or [], start=1):
         pilihan = bool(p.get("pilihan"))
-        lencana = '<span class="pakej__lencana">Pilihan ramai</span>' if pilihan else ""
-        asal = f'<p class="pakej__asal">{harga(p["harga_asal"])}</p>' if p.get("harga_asal") else '<p class="pakej__asal"></p>'
+        lencana = f'<span class="pakej__lencana">{e(p["lencana"])}</span>' if p.get("lencana") else ""
+        asal = f'<p class="pakej__asal">{e(p["sekotak"])}</p>' if p.get("sekotak") else '<p class="pakej__asal"></p>'
         nota = e(p.get("nota") or "")
         kad.append(f'''<div class="pakej__kad{" pakej__kad--pilihan" if pilihan else ""}">
   {lencana}
@@ -179,23 +182,43 @@ def pakej_html():
   <p class="pakej__harga">{harga(p.get("harga"))}</p>
   {asal}
   <p class="pakej__nota">{nota}</p>
-  <a class="butang {"butang--utama" if pilihan else "butang--garis"}" href="tempah.html#pakej-{i}">Pilih {e(p["nama"])}</a>
+  <a class="butang {"butang--utama" if pilihan else "butang--garis"}" href="tempah.html#pakej-{i}" aria-label="Pilih {e(p["nama"])}">Pilih pakej ini</a>
 </div>''')
     return '<div class="pakej">' + "".join(kad) + "</div>"
 
 
 def fakta_html():
     butir = ["Kacip Fatimah, Manjakani dan 8 herba Ba Zhen"]
+    if ada("kandungan_sekotak"):
+        butir.append(e(cfg["kandungan_sekotak"]))
     if not tiada("no_mal"):
         butir.append("Berdaftar KKM: " + v("no_mal", "no. pendaftaran MAL"))
     if not tiada("halal"):
-        butir.append("Halal: " + v("halal", "status / badan pensijilan halal"))
+        butir.append(v("halal", "status / badan pensijilan halal"))
     if cfg.get("gmp"):
-        butir.append("Dikilangkan di kilang GMP")
+        butir.append("Kilang bertauliah GMP dan HACCP")
     if (cfg.get("penghantaran") or {}).get("cod"):
         butir.append("Boleh bayar semasa terima (COD)")
     li = "".join(f"<li>{I_SEMAK}<span>{b}</span></li>" for b in butir)
     return f'<div class="fakta"><div class="bekas"><ul>{li}</ul></div></div>'
+
+
+def pos_html():
+    """Ayat kos pos dan tempoh, daripada config."""
+    peng = cfg.get("penghantaran") or {}
+    ayat = (f"Semenanjung: {v('kos_semenanjung', 'kos pos Semenanjung', peng)}. "
+            f"Sabah dan Sarawak: {v('kos_sabah_sarawak', 'kos pos Sabah/Sarawak', peng)}.")
+    if peng.get("percuma"):
+        ayat += " " + e(peng["percuma"])
+    return ayat
+
+
+def tempoh_html():
+    peng = cfg.get("penghantaran") or {}
+    ayat = v("tempoh", "tempoh penghantaran", peng)
+    if peng.get("kurier"):
+        ayat += f" Kurier: {e(peng['kurier'])}."
+    return ayat
 
 
 # ------------------------------------------------------------------ soalan lazim
@@ -206,24 +229,27 @@ def soalan_semua():
     lapan_nama = ", ".join(n for n, *_ in LAPAN)
 
     produk = [
-        (f"Apa itu {JENAMA}?",
-         f"<p>{JENAMA} ialah produk herba tradisional untuk wanita. Bahan utamanya Kacip Fatimah dan Manjakani, "
-         f"dua herba kewanitaan warisan Melayu, dilengkapi ramuan klasik lapan herba Ba Zhen.</p>"
-         f"<p>Bentuk produk: {v('bentuk', 'bentuk produk, cth. kapsul / minuman sachet')}. "
-         f"Kandungan sekotak: {v('kandungan_sekotak', 'kandungan sekotak, cth. 60 kapsul')}.</p>"),
-        (f"Apa bahan dalam {JENAMA}?",
-         f"<p>Dua bahan utama: ekstrak Kacip Fatimah (<i>Labisia pumila</i>) dan ekstrak Manjakani (<i>Quercus infectoria</i>).</p>"
-         f"<p>Bahan sokongan: lapan herba Ba Zhen, iaitu {e(lapan_nama)}. "
-         f"Butiran penuh ada di halaman <a href=\"bahan.html\">Bahan</a>.</p>"),
+        (f"Apa itu {PRODUK}?",
+         f"<p>{PRODUK} ialah minuman ekstrak botani sedia diminum untuk wanita. Ia menggandingkan Kacip Fatimah dan Manjakani, "
+         f"dua herba warisan Melayu, dengan ramuan klasik lapan herba Ba Zhen.</p>"
+         f"<p>Sekotak mengandungi {v('kandungan_sekotak', 'kandungan sekotak')}. Tak perlu bancuh atau rebus: koyak dan minum.</p>"),
+        (f"Apa bahan dalam {PRODUK}?",
+         f"<p>Mengikut label: air, lapan herba Ba Zhen ({e(lapan_nama)}), serbuk buah beri campuran, "
+         f"Kacip Fatimah (3%) dan Manjakani.</p>"
+         f"<p>Butiran setiap herba ada di halaman <a href=\"bahan.html\">Bahan</a>.</p>"),
         ("Ba Zhen itu apa? Sesuai ke untuk orang Melayu?",
          "<p>Ba Zhen bermaksud “lapan khazanah”. Ia ramuan herba Cina klasik yang sudah digunakan beratus tahun, "
          "terutamanya oleh wanita. Dalam resipi klasik, kesemua lapan bahannya berasal daripada tumbuhan dan kulat, tanpa bahan haiwan.</p>"
-         "<p>Ramai wanita Melayu sudah biasa dengan herba Cina seperti dang gui dan ginseng dalam sup dan jamu moden. "
-         "Ba Zhen hanyalah gabungan lapan herba seumpama itu dalam satu resipi.</p>"),
+         "<p>Ramai wanita Melayu sudah biasa dengan herba Cina seperti dang gui dalam sup herba. "
+         "Ba Zhen ialah gabungan lapan herba seumpama itu dalam satu resipi.</p>"),
     ]
     if not tiada("halal"):
-        produk.append((f"Adakah {JENAMA} halal?",
-                       f"<p>Status halal: {v('halal', 'status / badan pensijilan halal')}.</p>"))
+        butiran = e(cfg.get("halal_butiran") or "")
+        produk.append((f"Adakah {PRODUK} halal?",
+                       f"<p>Ya. {v('halal', 'status / badan pensijilan halal')}. {butiran}</p>"))
+    produk.append((f"Adakah {PRODUK} ubat?",
+                   f"<p>Bukan. {PRODUK} ialah minuman ekstrak botani, iaitu produk makanan. "
+                   "Ia tidak bertujuan mendiagnosis, merawat, menyembuhkan atau mencegah sebarang penyakit.</p>"))
     if not tiada("no_mal"):
         produk.append((f"Adakah {JENAMA} berdaftar dengan KKM?",
                        f"<p>Ya. Nombor pendaftaran: {v('no_mal', 'no. pendaftaran MAL')}. "
@@ -236,16 +262,19 @@ def soalan_semua():
          "<p>Jangan ambil jika anda hamil. Dapatkan nasihat doktor atau ahli farmasi dahulu jika anda:</p>"
          "<ul><li>sedang menyusu atau merancang untuk hamil;</li>"
          "<li>mengambil ubat cair darah, ubat hormon atau ubat tetap yang lain;</li>"
-         "<li>ada penyakit kronik atau bakal menjalani pembedahan;</li>"
+         "<li>ada masalah kesihatan atau bakal menjalani pembedahan;</li>"
          "<li>berumur bawah 18 tahun.</li></ul>"),
         ("Berapa lama baru nampak kesan?",
          "<p>Setiap orang berbeza, jadi kami tidak menjanjikan kesan dalam tempoh tertentu. "
-         "Herba tradisional diamalkan secara konsisten mengikut sukatan, bukan diambil untuk kesan segera.</p>"),
+         "Ini minuman herba untuk diamalkan mengikut sukatan, bukan ubat untuk kesan segera.</p>"),
         ("Ada kesan sampingan?",
          "<p>Berhenti mengambilnya dan berjumpa doktor jika anda mengalami ruam, sakit perut, pening, "
          "pendarahan luar biasa atau sebarang reaksi yang merisaukan. Jangan ambil melebihi sukatan pada label.</p>"),
-        (f"Bolehkah {JENAMA} menggantikan ubat doktor?",
-         f"<p>Tidak. {JENAMA} ialah produk tradisional, bukan ubat untuk merawat penyakit. "
+        ("Bagaimana cara simpan?",
+         "<p>Simpan di tempat sejuk dan kering, jauh daripada cahaya matahari terus. Minum sebaik sahaja sachet dibuka. "
+         "Rasa dan warna mungkin berbeza sedikit antara kumpulan pengeluaran kerana sifat semula jadi bahannya.</p>"),
+        (f"Bolehkah {PRODUK} menggantikan ubat doktor?",
+         f"<p>Tidak. {PRODUK} ialah minuman ekstrak botani, bukan ubat untuk merawat penyakit. "
          "Jika anda ada masalah kesihatan, teruskan rawatan dan ikut nasihat doktor anda.</p>"),
     ]
 
@@ -254,13 +283,10 @@ def soalan_semua():
          "<p>Pilih pakej di halaman <a href=\"tempah.html\">Tempah</a>, isi nama dan alamat, kemudian tekan butang hantar. "
          "Butiran tempahan anda akan dibuka di WhatsApp. Kami sahkan tempahan dan cara bayaran di situ.</p>"),
         ("Apa cara bayaran yang diterima?", f"<p>{bayar_html}.</p>"),
-        ("Berapa kos dan tempoh penghantaran?",
-         f"<p>Semenanjung: {v('kos_semenanjung', 'kos pos Semenanjung', peng)}. "
-         f"Sabah dan Sarawak: {v('kos_sabah_sarawak', 'kos pos Sabah/Sarawak', peng)}.</p>"
-         f"<p>Tempoh: {v('tempoh', 'tempoh penghantaran, cth. 2 hingga 4 hari bekerja', peng)}. "
-         f"Kurier: {v('kurier', 'nama kurier', peng)}.</p>"),
+        ("Berapa kos penghantaran, dan bila barang dipos?",
+         f"<p>{pos_html()}</p><p>{tempoh_html()}</p>"),
         ("Boleh pulangkan barang?",
-         f"<p>{v('polisi_pemulangan', 'polisi pemulangan, cth. dalam 7 hari jika rosak atau salah hantar')}</p>"
+         f"<p>{v('polisi_pemulangan', 'polisi pemulangan')}</p>"
          "<p>Butiran lanjut di halaman <a href=\"polisi.html\">Polisi</a>.</p>"),
     ]
     return [("Tentang produk", produk), ("Cara guna dan keselamatan", guna), ("Tempahan dan penghantaran", beli)]
@@ -299,8 +325,9 @@ def rangka(fail, tajuk, huraian, badan, bar=True):
                 'Tanda kuning ialah maklumat yang belum diisi dalam config.json.</div></div>') if DRAF else ""
     bar_html = (f'<div class="bar-tempah">{butang_tempah()}</div>') if bar else ""
     syarikat = e(cfg.get("syarikat") or JENAMA)
+    ssm = f" {e(cfg['no_ssm'])}" if cfg.get("no_ssm") else ""
     mal = "" if tiada("no_mal") or not ada("no_mal") else f" No. pendaftaran: {e(cfg['no_mal'])}."
-    robots = '<meta name="robots" content="noindex">' if DRAF else ""
+    robots = "" if INDEKS else '<meta name="robots" content="noindex">'
     return f'''<!DOCTYPE html>
 <html lang="ms">
 <head>
@@ -346,7 +373,7 @@ def rangka(fail, tajuk, huraian, badan, bar=True):
     <div class="kaki__grid">
       <div>
         <a class="jenama" href="index.html">{e(JENAMA)}</a>
-        <p>Kacip Fatimah dan Manjakani, diperkaya lapan herba Ba Zhen. Digunakan secara tradisional untuk kesihatan wanita.</p>
+        <p>{e(PRODUK)}: minuman ekstrak botani dengan Kacip Fatimah, Manjakani dan lapan herba Ba Zhen.</p>
       </div>
       <div>
         <h2>Laman</h2>
@@ -367,10 +394,10 @@ def rangka(fail, tajuk, huraian, badan, bar=True):
       </div>
     </div>
     <div class="kaki__penafian">
-      <p>Ini ialah produk tradisional. Kenyataan di laman ini berdasarkan kegunaan tradisi dan bukan nasihat perubatan.
-      {e(JENAMA)} tidak bertujuan mendiagnosis, merawat, menyembuhkan atau mencegah sebarang penyakit.
+      <p>{e(PRODUK)} ialah minuman ekstrak botani, bukan ubat. Maklumat herba di laman ini untuk pengetahuan umum dan bukan nasihat perubatan.
+      Produk ini tidak bertujuan mendiagnosis, merawat, menyembuhkan atau mencegah sebarang penyakit.
       Jangan ambil jika hamil. Jika menyusu atau sedang mengambil ubat, dapatkan nasihat doktor dahulu.</p>
-      <p>&copy; {TAHUN} {syarikat}.{mal}</p>
+      <p>&copy; {TAHUN} {syarikat}{ssm}.{mal}</p>
     </div>
   </div>
 </footer>
@@ -386,13 +413,13 @@ def hal_utama():
     lapan_li = "".join(f"<li><div><b>{e(n)}</b> <span>{e(m)}</span></div></li>" for n, m, *_ in LAPAN)
 
     sebab = [
-        (I_PERIUK, "Tak perlu merebus", "Herba sudah diproses dan disukat. Tiada periuk, tiada bau akar kayu di dapur."),
-        (I_SUKAT, "Sukatan sama setiap hari", "Tiada agak-agak segenggam atau secubit. Setiap sajian sama kandungannya."),
-        (I_LABEL, "Setiap bahan dinamakan", "Kesemua sepuluh herba disenaraikan pada label dan di laman ini. Tiada “ramuan rahsia”."),
+        (I_PERIUK, "Tak perlu merebus", "Tiada periuk, tiada bancuhan. Koyak sachet dan minum terus."),
+        (I_SUKAT, "Sukatan sama setiap sachet", "Tiada agak-agak segenggam atau secubit. Setiap sachet 20 ml, senang dibawa ke mana-mana."),
+        (I_LABEL, "Setiap bahan dinamakan", "Kesemua sepuluh herba disenaraikan pada kotak dan di laman ini. Tiada “ramuan rahsia”."),
     ]
-    if not tiada("no_mal"):
-        sebab.append((I_PERISAI, "Berdaftar dengan KKM",
-                      f"Nombor pendaftaran {v('no_mal', 'no. pendaftaran MAL')}, boleh disemak di laman NPRA."))
+    if ada("halal"):
+        sebab.append((I_PERISAI, "Halal, dari kilang bertauliah",
+                      e(cfg.get("sebab_halal") or cfg["halal"])))
     sebab_html = "".join(f"<div>{ik}<h3>{e(t)}</h3><p>{p}</p></div>" for ik, t, p in sebab)
 
     testi = cfg.get("testimoni") or []
@@ -410,19 +437,21 @@ def hal_utama():
 </section>'''
 
     ringkas = soalan_semua()
-    pilihan_soalan = [ringkas[0][1][2], ringkas[1][1][1], ringkas[1][1][2], ringkas[2][1][0]]
+    semua = [x for _, kump in ringkas for x in kump]
+    mahu = ("Ba Zhen itu apa", "halal", "Siapa yang tidak sesuai", "Berapa kos penghantaran")
+    pilihan_soalan = [x for kunci in mahu for x in semua if kunci in x[0]][:4]
 
     badan = f'''
 <section class="hero">
   <div class="bekas hero__grid">
     <div>
-      <h1>Kacip Fatimah dan Manjakani, diperkaya lapan herba Ba Zhen.</h1>
-      <p class="hero__sub">{e(JENAMA)} menghimpunkan dua herba kewanitaan warisan Melayu bersama ramuan klasik lapan herba, untuk amalan penjagaan dalaman wanita setiap hari.</p>
+      <h1>Kacip Fatimah dan Manjakani, bersama lapan herba Ba Zhen.</h1>
+      <p class="hero__sub">{e(PRODUK)} ialah minuman herba sedia diminum untuk wanita. Dua herba warisan Melayu dan ramuan klasik lapan herba, dalam satu sachet kecil.</p>
       <div class="butang-baris">
         {butang_tempah("butang--emas")}
         <a class="butang butang--garis" href="bahan.html">Kenali bahannya</a>
       </div>
-      <p class="hero__tuntutan">Digunakan secara tradisional untuk kesihatan wanita.</p>
+      <p class="hero__tuntutan">Minuman ekstrak botani. {v("kandungan_sekotak", "kandungan sekotak")}.</p>
     </div>
     <div class="hero__rajah">{rajah(hidup=True)}</div>
   </div>
@@ -431,11 +460,11 @@ def hal_utama():
 
 <section class="blok blok--putih">
   <div class="bekas dua dua--foto-kecil">
-    {foto("produk.jpg", f"Kotak {JENAMA} bersama daun Kacip Fatimah dan buah manjakani", "gerbang")}
+    {foto("produk.jpg", f"Kotak {PRODUK} bersama daun Kacip Fatimah dan buah manjakani", "gerbang")}
     <div>
       <h2>Amalan nenek kita, tanpa periuk dan akar kayu.</h2>
       <p class="pendek">Dulu, ibu dan nenek merebus Kacip Fatimah selepas bersalin dan menyimpan manjakani dalam balang di dapur. Amalannya masih elok. Yang berubah cuma masa kita.</p>
-      <p class="pendek">{e(JENAMA)} menyediakan herba yang sama dalam bentuk {v("bentuk", "bentuk produk, cth. kapsul / minuman sachet")}, dengan sukatan yang tetap. Ambil, dan teruskan hari anda.</p>
+      <p class="pendek">{e(PRODUK)} membawa herba yang sama dalam bentuk {v("bentuk", "bentuk produk")}. Koyak, minum, dan teruskan hari anda.</p>
       <div class="butang-baris">{butang_tempah()}</div>
     </div>
   </div>
@@ -445,7 +474,7 @@ def hal_utama():
   <div class="bekas">
     <div class="blok__kepala">
       <h2>Dua herba yang wanita Melayu kenal sejak dulu.</h2>
-      <p>Kedua-duanya bahan utama {e(JENAMA)}, dan kedua-duanya sudah lama ada dalam jamu dan amalan berpantang kita.</p>
+      <p>Kedua-duanya ada dalam {e(PRODUK)}, dan kedua-duanya sudah lama ada dalam jamu dan amalan berpantang kita.</p>
     </div>
     <div class="herba">
       <article class="herba__kad">
@@ -473,8 +502,8 @@ def hal_utama():
 <section class="blok blok--daun">
   <div class="bekas dua">
     <div>
-      <h2>Dilengkapi Ba Zhen, ramuan lapan herba.</h2>
-      <p class="pendek">Ba Zhen bermaksud “lapan khazanah”. Ramuan herba Cina klasik ini secara tradisinya diambil wanita untuk menyokong darah dan tenaga. Dalam {e(JENAMA)}, ia bahan sokongan kepada dua herba utama.</p>
+      <h2>Bersama Ba Zhen, ramuan lapan herba.</h2>
+      <p class="pendek">Ba Zhen bermaksud “lapan khazanah”. Ramuan herba Cina klasik ini sudah beratus tahun menjadi amalan wanita, lazimnya selepas haid. Dalam {e(PRODUK)}, lapan herba ini digandingkan dengan Kacip Fatimah dan Manjakani.</p>
       <ul class="lapan">{lapan_li}</ul>
       <p style="margin-top:1.6rem"><a href="bahan.html#ba-zhen">Lihat butiran lapan herba</a></p>
     </div>
@@ -492,7 +521,7 @@ def hal_utama():
       <li><h3>Ibu yang baru habis pantang</h3><p>Yang mahu meneruskan penjagaan dalaman selepas tempoh berpantang tamat. Jika masih menyusu, tanya doktor dahulu.</p></li>
       <li><h3>Wanita bekerja</h3><p>Yang mahukan satu amalan herba yang ringkas di celah jadual yang padat.</p></li>
       <li><h3>Isteri yang menjaga diri</h3><p>Yang menganggap penjagaan dalaman sama penting dengan penjagaan luaran.</p></li>
-      <li><h3>Wanita 40-an ke atas</h3><p>Yang mula memberi lebih perhatian kepada kesihatan kewanitaan.</p></li>
+      <li><h3>Wanita 30-an ke atas</h3><p>Yang mula memberi lebih perhatian kepada penjagaan diri setiap bulan.</p></li>
     </ul>
   </div>
 </section>
@@ -511,7 +540,7 @@ def hal_utama():
       {cara_ambil_html()}
       <div style="margin-top:1.8rem">{AMARAN}</div>
     </div>
-    {foto("cara-ambil.jpg", f"Tangan wanita memegang {JENAMA} bersama segelas air suam", "lebar")}
+    {foto("cara-ambil.jpg", "Wanita berbaju kurung memegang segelas kecil minuman herba", "lebar")}
   </div>
 </section>
 
@@ -521,7 +550,7 @@ def hal_utama():
   <div class="bekas">
     <div class="blok__kepala">
       <h2>Pilih pakej anda</h2>
-      <p>Tempahan disahkan melalui WhatsApp sebelum barang dipos.</p>
+      <p>{e((cfg.get("penghantaran") or {}).get("percuma") or "Tempahan disahkan melalui WhatsApp sebelum barang dipos.")}</p>
     </div>
     {pakej_html()}
   </div>
@@ -547,8 +576,8 @@ def hal_utama():
 </section>
 '''
     return rangka("index.html",
-                  f"{JENAMA} | Kacip Fatimah dan Manjakani, diperkaya lapan herba Ba Zhen",
-                  f"{JENAMA} menghimpunkan Kacip Fatimah dan Manjakani bersama ramuan lapan herba Ba Zhen. Digunakan secara tradisional untuk kesihatan wanita.",
+                  f"{PRODUK} | Kacip Fatimah dan Manjakani, bersama lapan herba Ba Zhen",
+                  f"{PRODUK} ialah minuman ekstrak botani sedia diminum dengan Kacip Fatimah, Manjakani dan lapan herba Ba Zhen. 10 sachet x 20 ml.",
                   badan)
 
 
@@ -557,13 +586,12 @@ def hal_bahan():
     baris = "".join(
         f"<tr><th scope=\"row\">{e(n)}</th><td>{e(m.capitalize())}</td><td><i>{e(b)}</i></td><td>{e(bhg)}</td></tr>"
         for n, m, b, bhg in LAPAN)
-    sahkan = (f'<p class="kecil">{isi("sahkan senarai dan nama herba Ba Zhen ikut label produk sebenar")}</p>'
-              if DRAF else "")
+    sahkan = '<p class="kecil">Bahan lain pada label: air dan serbuk buah beri campuran.</p>'
     badan = f'''
 <section class="tajuk-halaman">
   <div class="bekas">
-    <h1>Bahan dalam {e(JENAMA)}</h1>
-    <p>Dua herba utama dan lapan herba sokongan. Di sini kami terangkan setiap satunya: dari mana asalnya, bagaimana ia digunakan secara tradisi, dan apa yang kajian tahu setakat ini.</p>
+    <h1>Bahan dalam {e(PRODUK)}</h1>
+    <p>Dua herba warisan Melayu dan lapan herba Ba Zhen. Di sini kami terangkan setiap satunya: dari mana asalnya, bagaimana ia dikenali dalam tradisi, dan apa yang kajian tahu setakat ini.</p>
   </div>
 </section>
 
@@ -571,8 +599,8 @@ def hal_bahan():
   <div class="bekas dua">
     <div class="prosa">
       <h2>Satu formula, sepuluh herba</h2>
-      <p>Kacip Fatimah dan Manjakani ialah teras penjagaan dalaman wanita Melayu, jadi kedua-duanya menjadi bahan utama. Ba Zhen pula ramuan Cina klasik yang tumpuannya pada darah dan tenaga. Ia melengkapkan dua herba utama, bukan menggantikannya.</p>
-      <p>Malaysia tempat dua tradisi herba ini hidup berjiran. {e(JENAMA)} menghimpunkannya dalam satu sajian.</p>
+      <p>{e(PRODUK)} menggandingkan dua herba yang lama dikenali wanita Melayu, Kacip Fatimah dan Manjakani, dengan lapan herba Ba Zhen daripada tradisi Cina. Mengikut label, kandungan Kacip Fatimah ialah 3%.</p>
+      <p>Malaysia tempat dua tradisi herba ini hidup berjiran. {e(PRODUK)} menghimpunkannya dalam satu sachet 20 ml.</p>
     </div>
     <div style="max-width:380px;margin-inline:auto;width:100%">{rajah()}</div>
   </div>
@@ -612,7 +640,7 @@ def hal_bahan():
   <div class="bekas dua dua--foto-kecil">
     {foto("ba-zhen.jpg", "Lapan jenis herba kering Ba Zhen disusun dalam piring kecil", "petak")}
     <div>
-      <h2>Ba Zhen, lapan herba sokongan</h2>
+      <h2>Ba Zhen, ramuan lapan herba</h2>
       <p class="pendek">Ba Zhen (八珍) bermaksud “lapan khazanah”. Resipinya berusia ratusan tahun dan menggabungkan dua ramuan asas perubatan tradisional Cina: empat herba untuk darah dan empat herba untuk tenaga, atau <i>qi</i>.</p>
       <p class="pendek">Dalam masyarakat Cina, ia lazim direbus sebagai sup dan diminum wanita selepas haid tamat. Dalam resipi klasik, kesemua lapan bahannya daripada tumbuhan dan kulat, tanpa bahan haiwan.</p>
     </div>
@@ -639,8 +667,8 @@ def hal_bahan():
   </div>
 </section>
 '''
-    return rangka("bahan.html", f"Bahan dalam {JENAMA}: Kacip Fatimah, Manjakani dan Ba Zhen",
-                  f"Kenali sepuluh herba dalam {JENAMA}: Kacip Fatimah, Manjakani dan lapan herba Ba Zhen, serta kegunaan tradisinya.",
+    return rangka("bahan.html", f"Bahan dalam {PRODUK}: Kacip Fatimah, Manjakani dan Ba Zhen",
+                  f"Kenali sepuluh herba dalam {PRODUK}: Kacip Fatimah, Manjakani dan lapan herba Ba Zhen.",
                   badan)
 
 
@@ -659,9 +687,9 @@ def hal_tentang():
     <div class="prosa">
       <h2>Dari dapur nenek ke rutin harian</h2>
       <p>Hampir setiap keluarga Melayu ada cerita tentang jamu. Periuk akar kayu di atas dapur selepas kakak bersalin. Balang manjakani di rak. Pesanan mak supaya “jaga dalam” sama seperti jaga luar.</p>
-      <p>Ilmunya masih ada, tetapi tidak ramai yang sempat merebus herba setiap hari. {e(JENAMA)} dibuat supaya amalan itu boleh diteruskan dengan cara yang lebih mudah.</p>
+      <p>Ilmunya masih ada, tetapi tidak ramai yang sempat merebus herba setiap hari. {e(PRODUK)} dibuat supaya amalan itu boleh diteruskan dengan cara yang lebih mudah: satu sachet, terus minum.</p>
       <h2>Dua tradisi, satu ramuan</h2>
-      <p>Di Malaysia, kedai jamu dan kedai sinseh sudah lama berjiran. {e(JENAMA)} mengambil yang terbaik daripada kedua-duanya: Kacip Fatimah dan Manjakani daripada warisan Melayu sebagai bahan utama, dan lapan herba Ba Zhen daripada tradisi Cina sebagai pelengkap.</p>
+      <p>Di Malaysia, kedai jamu dan kedai sinseh sudah lama berjiran. {e(PRODUK)} mengambil daripada kedua-duanya: Kacip Fatimah dan Manjakani daripada warisan Melayu, dan lapan herba Ba Zhen daripada tradisi Cina. Ia jenama tempatan Malaysia.</p>
     </div>
     {foto("warisan.jpg", "Herba kering, lesung batu dan kain batik di atas meja kayu", "gerbang")}
   </div>
@@ -672,7 +700,7 @@ def hal_tentang():
     <div class="blok__kepala"><h2>Pegangan kami</h2></div>
     <div class="sebab">
       <div><h3>Kami namakan setiap bahan</h3><p>Kesemua sepuluh herba disenaraikan pada label dan di halaman <a href="bahan.html">Bahan</a>.</p></div>
-      <div><h3>Kami tak janji keajaiban</h3><p>Herba tradisional bukan ubat segera. Kami tidak menjanjikan kesan dalam tempoh tertentu, dan produk ini tidak menggantikan nasihat doktor.</p></div>
+      <div><h3>Kami tak janji keajaiban</h3><p>Ini minuman herba, bukan ubat. Kami tidak menjanjikan kesan dalam tempoh tertentu, dan produk ini tidak menggantikan nasihat doktor.</p></div>
       <div><h3>Kami jawab soalan anda</h3><p>Sebelum atau selepas membeli, tanya kami apa sahaja tentang produk di WhatsApp.</p></div>
     </div>
   </div>
@@ -685,7 +713,8 @@ def hal_tentang():
       <div class="jadual-balut">
       <table class="jadual">
         <tbody>
-          <tr><th scope="row">Syarikat</th><td>{v("syarikat", "nama syarikat")}</td></tr>
+          <tr><th scope="row">Diedarkan oleh</th><td>{v("syarikat", "nama syarikat")}</td></tr>
+          {f'<tr><th scope="row">Dikilangkan oleh</th><td>{e(cfg["pengilang"])}</td></tr>' if cfg.get("pengilang") else ""}
           <tr><th scope="row">No. pendaftaran SSM</th><td>{v("no_ssm", "no. SSM")}</td></tr>
           <tr><th scope="row">Alamat</th><td>{v("alamat_syarikat", "alamat syarikat")}</td></tr>
           {"" if tiada("no_mal") else f'<tr><th scope="row">No. pendaftaran KKM</th><td>{v("no_mal", "no. pendaftaran MAL")}</td></tr>'}
@@ -700,7 +729,7 @@ def hal_tentang():
 </section>
 '''
     return rangka("tentang.html", f"Tentang {JENAMA}",
-                  f"{JENAMA} menghimpunkan herba kewanitaan warisan Melayu dan ramuan klasik Ba Zhen untuk wanita hari ini.",
+                  f"{PRODUK}: minuman ekstrak botani tempatan yang menghimpunkan herba warisan Melayu dan ramuan klasik Ba Zhen.",
                   badan)
 
 
@@ -738,7 +767,7 @@ def hal_tempah():
     pilih = []
     for i, p in enumerate(senarai, start=1):
         pilih.append(f'''<label>
-  <input type="radio" name="pakej" value="{i}" data-nama="{e(p["nama"])}" data-harga="{e(harga_teks(p.get("harga")))}"{" checked" if i == lalai else ""}>
+  <input type="radio" name="pakej" value="{i}" data-nama="{e(p["nama"] + " (" + (p.get("label") or "") + ")")}" data-harga="{e(harga_teks(p.get("harga")))}"{" checked" if i == lalai else ""}>
   <span><b>{e(p["nama"])}</b><small>{e(p.get("label") or "")}</small></span>
   <span class="harga">{harga(p.get("harga"))}</span>
 </label>''')
@@ -753,14 +782,14 @@ def hal_tempah():
     badan = f'''
 <section class="tajuk-halaman">
   <div class="bekas">
-    <h1>Tempah {e(JENAMA)}</h1>
+    <h1>Tempah {e(PRODUK)}</h1>
     <p>Isi borang ini dan butiran tempahan anda akan dibuka di WhatsApp. Kami sahkan jumlah dan cara bayaran di situ sebelum barang dipos.</p>
   </div>
 </section>
 
 <section class="blok blok--kelopak">
   <div class="bekas tempah">
-    <form class="borang" id="borang-tempah" novalidate data-whatsapp="{e(WA_NOMBOR)}" data-jenama="{e(JENAMA)}">
+    <form class="borang" id="borang-tempah" novalidate data-whatsapp="{e(WA_NOMBOR)}" data-jenama="{e(PRODUK)}">
       <fieldset>
         <legend>1. Pilih pakej</legend>
         <div class="pilih">{"".join(pilih)}</div>
@@ -819,10 +848,9 @@ def hal_tempah():
       <h2>Selepas anda hantar</h2>
       <ul>
         <li>Kami balas di WhatsApp untuk sahkan tempahan dan jumlah bayaran.</li>
-        <li>Kos pos Semenanjung: {v("kos_semenanjung", "kos pos Semenanjung", peng)}</li>
-        <li>Kos pos Sabah dan Sarawak: {v("kos_sabah_sarawak", "kos pos Sabah/Sarawak", peng)}</li>
-        <li>Tempoh penghantaran: {v("tempoh", "tempoh penghantaran, cth. 2 hingga 4 hari bekerja", peng)}</li>
-        {"<li>Boleh bayar semasa terima (COD).</li>" if peng.get("cod") else ""}
+        <li>Kos pos: {pos_html()}</li>
+        <li>{tempoh_html()}</li>
+        {"<li>Bayar melalui pindahan bank atau semasa terima (COD).</li>" if peng.get("cod") else ""}
       </ul>
       {AMARAN}
       <p style="margin:1.2rem 0 0">Ada soalan dulu? <a href="{e(WA_TANYA)}" target="_blank" rel="noopener">Tanya di WhatsApp</a></p>
@@ -858,14 +886,14 @@ def hal_polisi():
       </ul>
 
       <h2 id="penghantaran">Penghantaran</h2>
-      <p>Kos pos Semenanjung: {v("kos_semenanjung", "kos pos Semenanjung", peng)}. Sabah dan Sarawak: {v("kos_sabah_sarawak", "kos pos Sabah/Sarawak", peng)}.</p>
-      <p>Tempoh penghantaran: {v("tempoh", "tempoh penghantaran, cth. 2 hingga 4 hari bekerja", peng)}. Kurier: {v("kurier", "nama kurier", peng)}. Nombor penjejakan dihantar melalui WhatsApp selepas barang dipos.</p>
+      <p>Kos pos: {pos_html()}</p>
+      <p>{tempoh_html()} Nombor penjejakan dihantar melalui WhatsApp selepas barang dipos.</p>
 
       <h2 id="pemulangan">Pemulangan dan bayaran balik</h2>
-      <p>{v("polisi_pemulangan", "polisi pemulangan, cth. dalam 7 hari jika rosak atau salah hantar")}</p>
+      <p>{v("polisi_pemulangan", "polisi pemulangan")}</p>
 
       <h2 id="penafian">Penafian</h2>
-      <p>{e(JENAMA)} ialah produk tradisional. Maklumat di laman ini berdasarkan kegunaan tradisi herba berkenaan dan disediakan untuk pengetahuan umum. Ia bukan nasihat perubatan.</p>
+      <p>{e(PRODUK)} ialah minuman ekstrak botani, bukan ubat. Maklumat herba di laman ini disediakan untuk pengetahuan umum. Ia bukan nasihat perubatan.</p>
       <p>Produk ini tidak bertujuan mendiagnosis, merawat, menyembuhkan atau mencegah sebarang penyakit. Kesan pada setiap individu berbeza. Jangan ambil jika hamil. Jika anda menyusu, ada masalah kesihatan atau sedang mengambil ubat, dapatkan nasihat doktor atau ahli farmasi sebelum menggunakannya.</p>
 
       <h2>Hubungi kami</h2>
@@ -925,8 +953,8 @@ def bina():
         "  ExpiresByType application/javascript \"access plus 7 days\"\n</IfModule>\n"
         "<IfModule mod_deflate.c>\n  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml\n</IfModule>\n",
         encoding="utf-8")
-    robots = "User-agent: *\n" + ("Disallow: /\n" if DRAF else "Allow: /\n")
-    if domain and not DRAF:
+    robots = "User-agent: *\n" + ("Allow: /\n" if INDEKS else "Disallow: /\n")
+    if domain and INDEKS:
         robots += f"Sitemap: {domain}/sitemap.xml\n"
         urls = "".join(
             f"<url><loc>{domain}/{'' if n == 'index.html' else n}</loc></url>" for n in halaman if n != "404.html")
