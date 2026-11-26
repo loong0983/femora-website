@@ -763,7 +763,7 @@ NEGERI = ["Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "
 def hal_tempah():
     peng = cfg.get("penghantaran") or {}
     senarai = cfg.get("pakej") or []
-    lalai = next((i for i, p in enumerate(senarai, 1) if p.get("pilihan")), 1)
+    lalai = 1  # jangan pra-pilih pakej paling mahal; pautan #pakej-N memilih pakej yang ditekan
     pilih = []
     for i, p in enumerate(senarai, start=1):
         pilih.append(f'''<label>
