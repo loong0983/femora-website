@@ -2,13 +2,13 @@
 /**
  * Plugin Name: FEMORA Shop
  * Description: 下单后台专用：结账语言切换（中 / 英 / 马来）、直达结账链接、订单来源标记。此文件由代码仓库管理并自动上传，请勿在后台直接修改。
- * Version: 1.0.2
+ * Version: 1.1.0
  * Author: FEMORA
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const FM_SHOP_VERSION = '1.0.2';
+const FM_SHOP_VERSION = '1.1.0';
 
 /** 语言代码 => WordPress locale */
 const FM_LANGS = array(
@@ -302,6 +302,89 @@ add_filter(
 		return $settings;
 	},
 	20
+);
+
+/* -------------------------------------------------------------------------
+ * 2b. 马来文界面文字
+ *     WooCommerce 官方没有马来文语言包，结账流程的文字由 lang/ms.php 提供。
+ * ---------------------------------------------------------------------- */
+
+function fm_ms_map() {
+	static $map = null;
+	if ( null === $map ) {
+		$file = __DIR__ . '/lang/ms.php';
+		$map  = is_readable( $file ) ? (array) include $file : array();
+	}
+	return $map;
+}
+
+function fm_ms_lookup( $translation, $text, $domain ) {
+	if ( 'woocommerce' !== $domain ) {
+		return $translation;
+	}
+	$map = fm_ms_map();
+	return isset( $map[ $text ] ) ? $map[ $text ] : $translation;
+}
+
+if ( 'ms' === fm_active_lang() ) {
+	add_filter( 'gettext', 'fm_ms_lookup', 20, 3 );
+	add_filter(
+		'gettext_with_context',
+		function ( $translation, $text, $context, $domain ) {
+			return fm_ms_lookup( $translation, $text, $domain );
+		},
+		20,
+		4
+	);
+	add_filter(
+		'ngettext',
+		function ( $translation, $single, $plural, $number, $domain ) {
+			return fm_ms_lookup( $translation, $single, $domain );
+		},
+		20,
+		5
+	);
+	add_filter(
+		'ngettext_with_context',
+		function ( $translation, $single, $plural, $number, $context, $domain ) {
+			return fm_ms_lookup( $translation, $single, $domain );
+		},
+		20,
+		6
+	);
+
+	// 结账页是用 JavaScript 画出来的，同一份文字也要交给前端。
+	add_action(
+		'wp_enqueue_scripts',
+		function () {
+			$data = array(
+				'' => array(
+					'domain'       => 'messages',
+					'lang'         => 'ms',
+					'plural-forms' => 'nplurals=1; plural=0;',
+				),
+			);
+			foreach ( fm_ms_map() as $source => $target ) {
+				$data[ $source ] = array( $target );
+			}
+			wp_add_inline_script( 'wp-i18n', 'wp.i18n.setLocaleData(' . wp_json_encode( $data ) . ',"woocommerce");', 'after' );
+		},
+		1
+	);
+}
+
+/** 页面的 lang 属性跟着顾客的语言 */
+add_filter(
+	'language_attributes',
+	function ( $output ) {
+		$lang = fm_active_lang();
+		if ( $lang ) {
+			$code   = str_replace( '_', '-', FM_LANGS[ $lang ] );
+			$output = preg_replace( '/lang="[^"]*"/', 'lang="' . esc_attr( $code ) . '"', (string) $output );
+		}
+		return $output;
+	},
+	PHP_INT_MAX
 );
 
 /* -------------------------------------------------------------------------
