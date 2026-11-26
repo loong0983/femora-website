@@ -2,13 +2,13 @@
 /**
  * Plugin Name: FEMORA Shop
  * Description: 下单后台专用：结账语言切换（中 / 英 / 马来）、直达结账链接、订单来源标记。此文件由代码仓库管理并自动上传，请勿在后台直接修改。
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: FEMORA
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const FM_SHOP_VERSION = '1.0.0';
+const FM_SHOP_VERSION = '1.0.1';
 
 /** 语言代码 => WordPress locale */
 const FM_LANGS = array(
@@ -541,3 +541,73 @@ add_action(
 		);
 	}
 );
+
+/* -------------------------------------------------------------------------
+ * 7. 翻译工具：网址加 ?fm_i18n_log=1 时，记录页面实际用到的界面文字
+ *    （只列出文字本身，用来核对马来文翻译有没有漏）
+ * ---------------------------------------------------------------------- */
+
+if ( isset( $_GET['fm_i18n_log'] ) ) {
+	$GLOBALS['fm_i18n_seen'] = array();
+
+	$fm_i18n_collect = function ( $key, $domain ) {
+		if ( ! is_admin() ) {
+			$GLOBALS['fm_i18n_seen'][ $domain . '|' . $key ] = 1;
+		}
+	};
+
+	add_filter(
+		'gettext',
+		function ( $translation, $text, $domain ) use ( $fm_i18n_collect ) {
+			$fm_i18n_collect( $text, $domain );
+			return $translation;
+		},
+		5,
+		3
+	);
+	add_filter(
+		'gettext_with_context',
+		function ( $translation, $text, $context, $domain ) use ( $fm_i18n_collect ) {
+			$fm_i18n_collect( $context . "\x04" . $text, $domain );
+			return $translation;
+		},
+		5,
+		4
+	);
+	add_filter(
+		'ngettext',
+		function ( $translation, $single, $plural, $number, $domain ) use ( $fm_i18n_collect ) {
+			$fm_i18n_collect( $single, $domain );
+			return $translation;
+		},
+		5,
+		5
+	);
+
+	add_action(
+		'wp_enqueue_scripts',
+		function () {
+			$js = "(function(){var S=window.__fmI18n={};function a(k,d){S[(d||'default')+'|'+k]=1;}" .
+				"wp.hooks.addFilter('i18n.gettext','fm/log',function(t,x,d){a(x,d);return t;});" .
+				"wp.hooks.addFilter('i18n.gettext_with_context','fm/log',function(t,x,c,d){a(c+'\\u0004'+x,d);return t;});" .
+				"wp.hooks.addFilter('i18n.ngettext','fm/log',function(t,s,p,n,d){a(s,d);return t;});" .
+				"wp.hooks.addFilter('i18n.ngettext_with_context','fm/log',function(t,s,p,n,c,d){a(c+'\\u0004'+s,d);return t;});})();";
+			wp_add_inline_script( 'wp-i18n', $js, 'after' );
+		},
+		1
+	);
+
+	add_action(
+		'wp_footer',
+		function () {
+			$keys = array();
+			foreach ( array_keys( $GLOBALS['fm_i18n_seen'] ) as $key ) {
+				if ( 0 !== strpos( $key, 'default|' ) ) {
+					$keys[] = $key;
+				}
+			}
+			echo '<script>window.__fmPhpI18n=' . wp_json_encode( $keys ) . ';</script>';
+		},
+		9999
+	);
+}
