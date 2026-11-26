@@ -2,13 +2,13 @@
 /**
  * Plugin Name: FEMORA Shop
  * Description: 下单后台专用：结账语言切换（中 / 英 / 马来）、直达结账链接、订单来源标记。此文件由代码仓库管理并自动上传，请勿在后台直接修改。
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: FEMORA
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const FM_SHOP_VERSION = '1.1.0';
+const FM_SHOP_VERSION = '1.2.0';
 
 /** 语言代码 => WordPress locale */
 const FM_LANGS = array(
@@ -78,6 +78,52 @@ const FM_TEXT = array(
 		'pay_desc' => 'Bayar dengan selamat melalui Billplz: perbankan dalam talian FPX, e-wallet seperti Touch \'n Go dan GrabPay, serta kad kredit / debit.',
 	),
 );
+
+/** 购物车 / 结账 / 付款成功页的页眉页脚文字 */
+const FM_CHROME = array(
+	'zh' => array(
+		'back'    => '返回首页',
+		'service' => '客服',
+		'email'   => 'Email',
+		'titles'  => array(
+			'checkout' => '结账',
+			'cart'     => '购物车',
+			'received' => '订单已收到',
+			'account'  => '我的账户',
+		),
+	),
+	'en' => array(
+		'back'    => 'Back to home',
+		'service' => 'Customer service',
+		'email'   => 'Email',
+		'titles'  => array(
+			'checkout' => 'Checkout',
+			'cart'     => 'Cart',
+			'received' => 'Order received',
+			'account'  => 'My account',
+		),
+	),
+	'ms' => array(
+		'back'    => 'Kembali ke laman utama',
+		'service' => 'Khidmat pelanggan',
+		'email'   => 'E-mel',
+		'titles'  => array(
+			'checkout' => 'Pembayaran',
+			'cart'     => 'Troli',
+			'received' => 'Pesanan diterima',
+			'account'  => 'Akaun saya',
+		),
+	),
+);
+
+/** 公司和客服资料（页脚用） */
+const FM_COMPANY        = 'JK HEALTHY SDN. BHD. 202601003161 (1665258-D)';
+const FM_WHATSAPP_TEXT  = '012-247 5798';
+const FM_WHATSAPP_LINK  = 'https://wa.me/60122475798';
+const FM_EMAIL          = 'admin@femoramy.com';
+
+/** 马来文网站的网址（页眉的“返回首页”用） */
+const FM_HOME_MS = 'https://femora-my.com/';
 
 /** 订单来源代码 => 后台显示名称 */
 const FM_SOURCES = array(
@@ -383,6 +429,91 @@ add_filter(
 			$output = preg_replace( '/lang="[^"]*"/', 'lang="' . esc_attr( $code ) . '"', (string) $output );
 		}
 		return $output;
+	},
+	PHP_INT_MAX
+);
+
+/* -------------------------------------------------------------------------
+ * 2c. 下单流程的页眉、页脚和页面标题按语言显示
+ *     （原本的页眉页脚是中文网站的导航，马来文 / 英文顾客看不懂）
+ * ---------------------------------------------------------------------- */
+
+function fm_home_url( $lang ) {
+	if ( 'ms' === $lang ) {
+		return FM_HOME_MS;
+	}
+	return 'en' === $lang ? home_url( '/en/' ) : home_url( '/' );
+}
+
+add_filter(
+	'render_block',
+	function ( $content, $block ) {
+		if ( empty( $block['blockName'] ) || 'core/template-part' !== $block['blockName'] ) {
+			return $content;
+		}
+		$lang = fm_active_lang();
+		if ( ! $lang ) {
+			return $content;
+		}
+		$slug = isset( $block['attrs']['slug'] ) ? (string) $block['attrs']['slug'] : '';
+		$t    = FM_CHROME[ $lang ];
+		$home = esc_url( fm_home_url( $lang ) );
+
+		if ( 'header' === $slug || 'checkout-header' === $slug ) {
+			return '<header class="fm-shop-header"><a class="fm-shop-logo" href="' . $home . '">FEMORA</a>' .
+				'<a class="fm-shop-back" href="' . $home . '">&larr; ' . esc_html( $t['back'] ) . '</a></header>';
+		}
+		if ( 'footer' === $slug ) {
+			return '<footer class="fm-shop-footer">' .
+				'<p>' . esc_html( $t['service'] ) . ' &mdash; WhatsApp: <a href="' . esc_url( FM_WHATSAPP_LINK ) . '">' . esc_html( FM_WHATSAPP_TEXT ) . '</a>' .
+				' &middot; ' . esc_html( $t['email'] ) . ': <a href="mailto:' . esc_attr( FM_EMAIL ) . '">' . esc_html( FM_EMAIL ) . '</a></p>' .
+				'<p>' . esc_html( FM_COMPANY ) . '</p>' .
+				'<p>&copy; ' . esc_html( gmdate( 'Y' ) ) . ' FEMORA</p></footer>';
+		}
+		return $content;
+	},
+	20,
+	2
+);
+
+add_action(
+	'wp_head',
+	function () {
+		if ( ! fm_active_lang() ) {
+			return;
+		}
+		echo '<style id="fm-shop-chrome">' .
+			'.fm-shop-header{display:flex;align-items:center;justify-content:space-between;gap:16px;width:calc(100% - 48px);max-width:1230px;margin:0 auto;padding:18px 0}' .
+			'.fm-shop-logo{font-family:"Noto Serif SC","Songti SC",STSong,"Source Han Serif SC",serif;font-size:22px;font-weight:700;letter-spacing:.18em;color:#8E1B2E;text-decoration:none}' .
+			'.fm-shop-back{font-size:14px;color:#3A2A2C;text-decoration:none;white-space:nowrap}' .
+			'.fm-shop-back:hover{color:#8E1B2E}' .
+			'.fm-shop-footer{background:#2E0B12;color:#E8CDD2;text-align:center;padding:28px 24px;font-size:13px;line-height:1.9;margin-top:56px}' .
+			'.fm-shop-footer p{margin:0}' .
+			'.fm-shop-footer a{color:#fff;text-decoration:none}' .
+			'.trp-language-switcher.trp-floating-switcher{display:none!important}' .
+			'</style>';
+	},
+	50
+);
+
+add_filter(
+	'document_title_parts',
+	function ( $parts ) {
+		$lang = fm_active_lang();
+		if ( ! $lang || ! function_exists( 'is_checkout' ) ) {
+			return $parts;
+		}
+		$titles = FM_CHROME[ $lang ]['titles'];
+		if ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) {
+			$parts['title'] = $titles['received'];
+		} elseif ( is_checkout() ) {
+			$parts['title'] = $titles['checkout'];
+		} elseif ( is_cart() ) {
+			$parts['title'] = $titles['cart'];
+		} elseif ( is_account_page() ) {
+			$parts['title'] = $titles['account'];
+		}
+		return $parts;
 	},
 	PHP_INT_MAX
 );
