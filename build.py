@@ -26,6 +26,12 @@ TAHUN = datetime.date.today().year
 kosong = []  # medan yang belum diisi
 
 
+def versi(fail):
+    """Cap versi daripada kandungan fail, supaya pelayar tidak guna CSS/JS lama dari cache."""
+    import hashlib
+    return hashlib.sha1((SRC / fail).read_bytes()).hexdigest()[:8]
+
+
 def e(s):
     return html.escape(str(s), quote=True)
 
@@ -350,7 +356,7 @@ def rangka(fail, tajuk, huraian, badan, bar=True):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/site.css?v={versi("site.css")}">
 {pixel()}
 </head>
 <body class="{"ada-bar" if bar else ""}">
@@ -405,7 +411,7 @@ def rangka(fail, tajuk, huraian, badan, bar=True):
   </div>
 </footer>
 {bar_html}
-<script src="js/site.js" defer></script>
+<script src="js/site.js?v={versi("site.js")}" defer></script>
 </body>
 </html>
 '''
